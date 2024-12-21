@@ -7,13 +7,15 @@ export class ResourceManager {
             materials: 50,
             morale: 50
         };
+    }
 
-        this.dailyConsumption = {
-            food: 3,
-            water: 5,
-            medicine: 2,
-            materials: 1,
-            morale: 2
+    initialize() {
+        this.resources = {
+            food: 50,
+            water: 50,
+            medicine: 50,
+            materials: 50,
+            morale: 50
         };
     }
 
@@ -22,34 +24,64 @@ export class ResourceManager {
     }
 
     modifyResource(type, amount) {
-        const newValue = Math.max(0, Math.min(100, this.resources[type] + amount));
-        this.resources[type] = newValue;
-        return newValue;
-    }
-
-    consumeDailyResources() {
-        for (const [resource, amount] of Object.entries(this.dailyConsumption)) {
-            this.modifyResource(resource, -amount);
+        if (this.resources[type] !== undefined) {
+            this.resources[type] = Math.max(0, Math.min(100, this.resources[type] + amount));
         }
     }
 
-    hasExtremeResources() {
-        return Object.values(this.resources).some(amount => amount <= 0 || amount >= 100);
+    consumeDailyResources() {
+        // Base consumption rates (adjusted to be more forgiving)
+        const baseConsumption = {
+            food: -3,
+            water: -4,
+            medicine: -1,
+            materials: -2,
+            morale: -2
+        };
+
+        // Apply consumption with dynamic adjustments
+        Object.entries(baseConsumption).forEach(([resource, amount]) => {
+            let finalAmount = amount;
+
+            // Adjust consumption based on current levels
+            if (this.resources[resource] < 30) {
+                // Reduce consumption when resources are low
+                finalAmount = Math.floor(amount * 0.7);
+            } else if (this.resources[resource] > 80) {
+                // Increase consumption when resources are abundant
+                finalAmount = Math.floor(amount * 1.3);
+            }
+
+            // Special morale adjustments
+            if (resource === 'morale') {
+                // Morale drops faster when other resources are low
+                const criticalResources = Object.entries(this.resources)
+                    .filter(([key, value]) => key !== 'morale' && value < 30).length;
+                finalAmount -= criticalResources;
+
+                // Morale improves slightly when resources are abundant
+                const abundantResources = Object.entries(this.resources)
+                    .filter(([key, value]) => key !== 'morale' && value > 70).length;
+                finalAmount += Math.floor(abundantResources * 0.5);
+            }
+
+            this.modifyResource(resource, finalAmount);
+        });
     }
 
-    getResourceStatus() {
-        return { ...this.resources };
+    hasExtremeResources() {
+        return Object.values(this.resources).some(value => value <= 0 || value >= 100);
     }
 
     getExtremeResourcesDescription() {
         const extremes = [];
-        for (const [resource, amount] of Object.entries(this.resources)) {
-            if (amount <= 0) {
+        Object.entries(this.resources).forEach(([resource, value]) => {
+            if (value <= 0) {
                 extremes.push(`${resource} depleted`);
-            } else if (amount >= 100) {
+            } else if (value >= 100) {
                 extremes.push(`${resource} overflow`);
             }
-        }
+        });
         return extremes.join(', ');
     }
 } 

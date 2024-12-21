@@ -14,14 +14,11 @@ export class GameState {
 
     incrementDay() {
         this.day++;
-        if (this.day > 7) {
-            this.day = 1;
-            this.week++;
-        }
+        this.week = Math.floor((this.day - 1) / 7) + 1;
     }
 
     isWeekEnd() {
-        return this.day === 7;
+        return this.day % 7 === 0;
     }
 
     isGameOver() {

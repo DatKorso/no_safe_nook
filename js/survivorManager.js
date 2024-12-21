@@ -1,52 +1,36 @@
+import { SurvivorGenerator } from './survivorGenerator.js';
+
 export class SurvivorManager {
     constructor() {
-        this.survivors = [
-            {
-                id: 1,
-                name: "Sarah",
-                health: 100,
-                skills: ["medical", "cooking"],
-                backstory: "Former nurse who lost her family in the initial attacks.",
-                relationships: {}
-            },
-            {
-                id: 2,
-                name: "Marcus",
-                health: 100,
-                skills: ["combat", "engineering"],
-                backstory: "Ex-military engineer with PTSD from recent conflicts.",
-                relationships: {}
-            },
-            {
-                id: 3,
-                name: "Elena",
-                health: 100,
-                skills: ["scavenging", "stealth"],
-                backstory: "Street-smart teenager who survived on her own for months.",
-                relationships: {}
-            }
-        ];
-
-        // Initialize relationships
-        this.initializeRelationships();
+        this.survivors = [];
+        this.generator = new SurvivorGenerator();
+        this.initializeSurvivors();
     }
 
-    initializeRelationships() {
-        this.survivors.forEach(survivor => {
-            this.survivors.forEach(other => {
-                if (survivor.id !== other.id) {
-                    survivor.relationships[other.id] = 0; // Neutral relationship
-                }
-            });
-        });
+    initializeSurvivors() {
+        this.survivors = this.generator.generateInitialSurvivors();
+    }
+
+    getAllSurvivors() {
+        return this.survivors;
     }
 
     getSurvivor(id) {
         return this.survivors.find(s => s.id === id);
     }
 
-    getAllSurvivors() {
-        return [...this.survivors];
+    getRandomSurvivor() {
+        return this.survivors[Math.floor(Math.random() * this.survivors.length)];
+    }
+
+    getRandomSurvivorPair() {
+        const firstIndex = Math.floor(Math.random() * this.survivors.length);
+        let secondIndex;
+        do {
+            secondIndex = Math.floor(Math.random() * this.survivors.length);
+        } while (secondIndex === firstIndex);
+
+        return [this.survivors[firstIndex], this.survivors[secondIndex]];
     }
 
     modifyHealth(id, amount) {
@@ -56,9 +40,7 @@ export class SurvivorManager {
             if (survivor.health <= 0) {
                 this.removeSurvivor(id);
             }
-            return survivor.health;
         }
-        return 0;
     }
 
     modifyRelationship(id1, id2, amount) {
@@ -66,8 +48,10 @@ export class SurvivorManager {
         const survivor2 = this.getSurvivor(id2);
         
         if (survivor1 && survivor2) {
-            survivor1.relationships[id2] = Math.max(-100, Math.min(100, survivor1.relationships[id2] + amount));
-            survivor2.relationships[id1] = Math.max(-100, Math.min(100, survivor2.relationships[id1] + amount));
+            survivor1.relationships[id2] = Math.max(0, Math.min(100, 
+                (survivor1.relationships[id2] || 0) + amount));
+            survivor2.relationships[id1] = Math.max(0, Math.min(100, 
+                (survivor2.relationships[id1] || 0) + amount));
         }
     }
 
@@ -75,7 +59,7 @@ export class SurvivorManager {
         const index = this.survivors.findIndex(s => s.id === id);
         if (index !== -1) {
             this.survivors.splice(index, 1);
-            // Update relationships
+            // Remove relationships with this survivor
             this.survivors.forEach(survivor => {
                 delete survivor.relationships[id];
             });
@@ -86,18 +70,36 @@ export class SurvivorManager {
         return this.survivors.length > 0;
     }
 
-    getRandomSurvivor() {
-        if (this.survivors.length === 0) return null;
-        return this.survivors[Math.floor(Math.random() * this.survivors.length)];
+    addNewSurvivor() {
+        const newId = Math.max(...this.survivors.map(s => s.id), 0) + 1;
+        const newSurvivor = this.generator.generateSurvivor(newId);
+        
+        // Initialize relationships with existing survivors
+        this.survivors.forEach(survivor => {
+            const initialRelationship = Math.floor(Math.random() * 51); // 0-50
+            survivor.relationships[newId] = initialRelationship;
+            newSurvivor.relationships[survivor.id] = initialRelationship;
+        });
+
+        this.survivors.push(newSurvivor);
+        return newSurvivor;
     }
 
-    getRandomSurvivorPair() {
-        if (this.survivors.length < 2) return null;
-        const survivor1 = this.getRandomSurvivor();
-        let survivor2;
-        do {
-            survivor2 = this.getRandomSurvivor();
-        } while (survivor2.id === survivor1.id);
-        return [survivor1, survivor2];
+    getSurvivorDetails(id) {
+        const survivor = this.getSurvivor(id);
+        if (!survivor) return null;
+
+        return {
+            id: survivor.id,
+            name: survivor.name,
+            background: survivor.background,
+            trait: survivor.trait,
+            health: survivor.health,
+            skills: survivor.skills,
+            relationships: Object.entries(survivor.relationships).map(([otherId, value]) => ({
+                with: this.getSurvivor(parseInt(otherId)).name,
+                value
+            }))
+        };
     }
 } 

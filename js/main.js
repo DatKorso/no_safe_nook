@@ -43,16 +43,31 @@ export class Game {
 
     handleChoice(choice) {
         const result = this.eventSystem.resolveChoice(choice);
-        this.uiManager.updateUI(result);
+        
+        // Show the outcome message
+        this.uiManager.showEventOutcome(result);
+        
+        // Increment the day after each choice
+        this.gameState.incrementDay();
+        this.resourceManager.consumeDailyResources();
+        
+        // Update UI with new state
+        this.uiManager.updateUI();
         
         // Check for game over conditions
         if (this.checkGameOver()) {
             return;
         }
 
-        // Resume the game and show next event
-        this.resumeGame();
-        this.displayNextEvent();
+        // Clear the current event display while showing outcome
+        this.uiManager.clearEventDisplay();
+
+        // Wait for the outcome message to disappear before showing next event
+        setTimeout(() => {
+            // Resume the game and show next event
+            this.resumeGame();
+            this.displayNextEvent();
+        }, 3000);
     }
 
     pauseGame() {
@@ -73,7 +88,7 @@ export class Game {
             clearInterval(this.gameLoopInterval);
         }
 
-        // Update game state every day (represented by real-world seconds for testing)
+        // Update game state every day (15 seconds = 1 in-game day for better pacing)
         this.gameLoopInterval = setInterval(() => {
             if (this.isPaused) return;
 
@@ -81,21 +96,24 @@ export class Game {
             this.resourceManager.consumeDailyResources();
             this.uiManager.updateUI();
 
-            // Check for weekly misfortune event
-            if (this.gameState.isWeekEnd()) {
+            // Check for weekly misfortune event (reduced frequency)
+            if (this.gameState.isWeekEnd() && Math.random() < 0.7) { // 70% chance for misfortune
                 this.pauseGame();
                 const result = this.eventSystem.triggerMisfortuneEvent();
-                this.uiManager.updateUI(result);
+                this.uiManager.showEventOutcome(result);
+                
+                // Clear the current event display while showing outcome
+                this.uiManager.clearEventDisplay();
                 
                 // Check for game over after misfortune event
                 if (!this.checkGameOver()) {
                     setTimeout(() => {
                         this.resumeGame();
                         this.displayNextEvent();
-                    }, 2000); // Give player time to read the misfortune event result
+                    }, 3000);
                 }
             }
-        }, 10000); // 10 seconds = 1 in-game day
+        }, 15000); // 15 seconds = 1 in-game day
     }
 
     checkGameOver() {

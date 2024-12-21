@@ -14,7 +14,13 @@ export default {
         survivors: "Выжившие",
         health: "Здоровье",
         skills: "Навыки",
-        relationships: "Отношения"
+        relationships: "Отношения",
+        background: "Предыстория",
+        trait: "Черта характера",
+        continue: "Продолжить",
+        gameOver: "Игра окончена",
+        gameOverText: "Ваша группа не выжила в суровых условиях...",
+        restart: "Начать новую игру"
     },
 
     // Skills
@@ -102,7 +108,7 @@ export default {
             title: "{name} заболел и нуждается в лечении.",
             choices: {
                 use: "Использовать медикаменты",
-                alternative: "Использовать альтернативное лечение"
+                alternative: "Использовать альтер��ативное лечение"
             },
             outcomes: {
                 success: "{name} успешно вылечен. Медикаменты -{medicine}, Здоровье +{health}, Мораль +{morale}",

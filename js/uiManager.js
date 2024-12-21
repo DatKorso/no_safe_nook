@@ -5,132 +5,178 @@ export class UIManager {
         this.survivorManager = survivorManager;
         this.localization = localization;
         this.currentEvent = null;
-        
-        // Cache DOM elements
-        this.dayCounter = document.getElementById('day-counter');
-        this.weekCounter = document.getElementById('week-counter');
-        this.eventText = document.getElementById('event-text');
-        this.choiceLeft = document.getElementById('choice-left');
-        this.choiceRight = document.getElementById('choice-right');
-        this.survivorsList = document.getElementById('survivors-list');
-
-        // Listen for language changes
-        window.addEventListener('languageChanged', () => {
-            this.updateUI();
-            if (this.currentEvent) {
-                this.updateEvent(this.currentEvent);
-            }
-        });
-
-        // Initial UI update
-        this.updateUI();
     }
 
-    updateUI(eventResult = null) {
+    updateUI() {
         this.updateGameStats();
         this.updateResources();
         this.updateSurvivors();
-        
-        if (eventResult) {
-            this.showEventResult(eventResult);
+        if (this.currentEvent) {
+            this.updateEvent(this.currentEvent);
         }
     }
 
     updateGameStats() {
-        this.dayCounter.textContent = `${this.localization.get('ui.day')}: ${this.gameState.day}`;
-        this.weekCounter.textContent = `${this.localization.get('ui.week')}: ${this.gameState.week}`;
-    }
+        const dayCounter = document.getElementById('day-counter');
+        const weekCounter = document.getElementById('week-counter');
 
-    updateResources() {
-        const resources = this.resourceManager.getResourceStatus();
-        for (const [resource, amount] of Object.entries(resources)) {
-            const element = document.getElementById(resource);
-            if (element) {
-                // Update resource name and percentage display
-                const resourceName = this.localization.get(`ui.resources.${resource}`);
-                element.querySelector('h3').textContent = resourceName;
-                element.querySelector('span').textContent = `${amount}%`;
-                
-                // Update resource bar
-                const fillBar = element.querySelector('.resource-fill');
-                fillBar.style.width = `${amount}%`;
-
-                // Remove existing status classes
-                element.classList.remove('critical', 'warning', 'excess');
-
-                // Add appropriate status class
-                if (amount <= 20) {
-                    element.classList.add('critical');
-                } else if (amount <= 30) {
-                    element.classList.add('warning');
-                } else if (amount >= 90) {
-                    element.classList.add('excess');
-                }
-            }
+        if (dayCounter) {
+            dayCounter.textContent = `${this.localization.get('ui.day')}: ${this.gameState.day}`;
+        }
+        if (weekCounter) {
+            weekCounter.textContent = `${this.localization.get('ui.week')}: ${Math.floor((this.gameState.day - 1) / 7) + 1}`;
         }
     }
 
-    updateSurvivors() {
-        const survivors = this.survivorManager.getAllSurvivors();
-        this.survivorsList.innerHTML = survivors.map(survivor => `
-            <div class="survivor ${survivor.health < 50 ? 'injured' : ''}">
-                <h3>${survivor.name}</h3>
-                <div class="health-bar">
-                    <div class="health-fill" style="width: ${survivor.health}%"></div>
-                </div>
-                <div class="survivor-stats">
-                    <p>${this.localization.get('ui.health')}: ${survivor.health}</p>
-                    <p>${this.localization.get('ui.skills')}: ${survivor.skills.map(skill => 
-                        this.localization.get(`skills.${skill.toLowerCase()}`)
-                    ).join(', ')}</p>
-                    <p class="survivor-backstory">${survivor.backstory}</p>
-                </div>
-            </div>
-        `).join('');
+    updateResources() {
+        const resources = ['food', 'water', 'medicine', 'materials', 'morale'];
+        resources.forEach(resource => {
+            const value = this.resourceManager.getResource(resource);
+            const resourceElement = document.getElementById(resource);
+            if (resourceElement) {
+                // Update percentage text
+                const span = resourceElement.querySelector('span');
+                if (span) {
+                    span.textContent = `${value}%`;
+                }
 
-        // Update survivors panel title
-        document.querySelector('.survivors-panel h2').textContent = this.localization.get('ui.survivors');
+                // Update progress bar
+                const fill = resourceElement.querySelector('.resource-fill');
+                if (fill) {
+                    fill.style.width = `${value}%`;
+                }
+
+                // Update resource status classes
+                resourceElement.classList.remove('critical', 'warning', 'excess');
+                if (value <= 20) {
+                    resourceElement.classList.add('critical');
+                } else if (value <= 30) {
+                    resourceElement.classList.add('warning');
+                } else if (value >= 90) {
+                    resourceElement.classList.add('excess');
+                }
+            }
+        });
     }
 
-    showEventResult(result) {
-        if (!result) return;
+    updateSurvivors() {
+        const survivorsContainer = document.getElementById('survivors-list');
+        if (!survivorsContainer) return;
 
-        // Create and show a temporary result message
-        const resultElement = document.createElement('div');
-        resultElement.className = 'event-result';
-        resultElement.textContent = result;
-        
-        const eventCard = document.querySelector('.event-card');
-        // Remove any existing event results
-        const existingResults = eventCard.querySelectorAll('.event-result');
-        existingResults.forEach(el => el.remove());
-        
-        eventCard.appendChild(resultElement);
+        survivorsContainer.innerHTML = '';
+        const survivors = this.survivorManager.getAllSurvivors();
 
-        // Remove the result message after a delay
-        setTimeout(() => {
-            resultElement.remove();
-        }, 3000);
+        survivors.forEach(survivor => {
+            const survivorElement = document.createElement('div');
+            survivorElement.className = 'survivor';
+            if (survivor.health < 50) {
+                survivorElement.classList.add('injured');
+            }
+            
+            survivorElement.innerHTML = `
+                <div class="survivor-header">
+                    <div class="survivor-name">${survivor.name}</div>
+                    <div class="survivor-health">
+                        <div class="health-bar">
+                            <div class="health-progress" style="width: ${survivor.health}%"></div>
+                            <span>${survivor.health}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="survivor-skills">
+                    ${survivor.skills.map(skill => 
+                        `<span class="skill-tag ${skill}">${this.localization.get(`skills.${skill}`)}</span>`
+                    ).join('')}
+                </div>
+            `;
+            
+            survivorsContainer.appendChild(survivorElement);
+        });
+    }
+
+    clearEventDisplay() {
+        // Clear event text and disable choice buttons
+        document.getElementById('event-text').textContent = '';
+        const leftButton = document.getElementById('choice-left');
+        const rightButton = document.getElementById('choice-right');
+        leftButton.textContent = '';
+        rightButton.textContent = '';
+        leftButton.disabled = true;
+        rightButton.disabled = true;
     }
 
     updateEvent(event) {
         if (!event) return;
-
-        this.currentEvent = event;  // Store the current event for language updates
         
-        // Update event text and choices
-        this.eventText.textContent = event.text;
-        this.choiceLeft.textContent = event.choices.left.text;
-        this.choiceRight.textContent = event.choices.right.text;
+        // Update event text
+        document.getElementById('event-text').textContent = event.text;
+        
+        // Update choice buttons
+        const leftButton = document.getElementById('choice-left');
+        const rightButton = document.getElementById('choice-right');
+        
+        leftButton.textContent = event.choices.left.text;
+        rightButton.textContent = event.choices.right.text;
+        
+        // Enable buttons
+        leftButton.disabled = false;
+        rightButton.disabled = false;
+    }
 
-        // Enable buttons for new event
-        this.choiceLeft.disabled = false;
-        this.choiceRight.disabled = false;
+    showEventOutcome(outcome) {
+        if (!outcome) return;
 
-        // Add visual feedback that a new event is available
-        this.eventText.classList.add('new-event');
+        // Create and show a temporary result message
+        const resultElement = document.createElement('div');
+        resultElement.className = 'event-result';
+
+        // Highlight resource changes with colors
+        const coloredOutcome = outcome.replace(/([+-]\d+)/g, match => {
+            const isPositive = match.startsWith('+');
+            const symbol = isPositive ? '+' : '';
+            return `<span class="${isPositive ? 'positive' : 'negative'}">${symbol}${match}</span>`;
+        });
+        
+        resultElement.innerHTML = coloredOutcome;
+        
+        // Add to event panel instead of event card for better positioning
+        const eventPanel = document.querySelector('.event-panel');
+        if (!eventPanel) return;
+
+        // Remove any existing event results
+        const existingResults = document.querySelectorAll('.event-result');
+        existingResults.forEach(el => el.remove());
+        
+        eventPanel.appendChild(resultElement);
+
+        // Disable choice buttons during outcome display
+        const choiceLeft = document.getElementById('choice-left');
+        const choiceRight = document.getElementById('choice-right');
+        if (choiceLeft) choiceLeft.disabled = true;
+        if (choiceRight) choiceRight.disabled = true;
+
+        // Remove the result message after animation and re-enable buttons
         setTimeout(() => {
-            this.eventText.classList.remove('new-event');
-        }, 300);
+            if (resultElement.parentNode) {
+                resultElement.parentNode.removeChild(resultElement);
+            }
+            if (choiceLeft) choiceLeft.disabled = false;
+            if (choiceRight) choiceRight.disabled = false;
+        }, 3000);
+    }
+
+    showGameOver() {
+        const container = document.getElementById('game-container');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="game-over">
+                <h2>${this.localization.get('ui.gameOver')}</h2>
+                <p>${this.localization.get('ui.gameOverText')}</p>
+                <button onclick="window.game.restartGame()">
+                    ${this.localization.get('ui.restart')}
+                </button>
+            </div>
+        `;
     }
 } 

@@ -14,7 +14,13 @@ export default {
         survivors: "Survivors",
         health: "Health",
         skills: "Skills",
-        relationships: "Relationships"
+        relationships: "Relationships",
+        background: "Background",
+        trait: "Trait",
+        continue: "Continue",
+        gameOver: "Game Over",
+        gameOverText: "Your group did not survive the harsh conditions...",
+        restart: "Start New Game"
     },
 
     // Skills
