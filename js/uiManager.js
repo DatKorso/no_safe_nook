@@ -1,8 +1,10 @@
 export class UIManager {
-    constructor(gameState, resourceManager, survivorManager) {
+    constructor(gameState, resourceManager, survivorManager, localization) {
         this.gameState = gameState;
         this.resourceManager = resourceManager;
         this.survivorManager = survivorManager;
+        this.localization = localization;
+        this.currentEvent = null;
         
         // Cache DOM elements
         this.dayCounter = document.getElementById('day-counter');
@@ -11,6 +13,14 @@ export class UIManager {
         this.choiceLeft = document.getElementById('choice-left');
         this.choiceRight = document.getElementById('choice-right');
         this.survivorsList = document.getElementById('survivors-list');
+
+        // Listen for language changes
+        window.addEventListener('languageChanged', () => {
+            this.updateUI();
+            if (this.currentEvent) {
+                this.updateEvent(this.currentEvent);
+            }
+        });
 
         // Initial UI update
         this.updateUI();
@@ -27,8 +37,8 @@ export class UIManager {
     }
 
     updateGameStats() {
-        this.dayCounter.textContent = `Day: ${this.gameState.day}`;
-        this.weekCounter.textContent = `Week: ${this.gameState.week}`;
+        this.dayCounter.textContent = `${this.localization.get('ui.day')}: ${this.gameState.day}`;
+        this.weekCounter.textContent = `${this.localization.get('ui.week')}: ${this.gameState.week}`;
     }
 
     updateResources() {
@@ -36,7 +46,9 @@ export class UIManager {
         for (const [resource, amount] of Object.entries(resources)) {
             const element = document.getElementById(resource);
             if (element) {
-                // Update percentage display
+                // Update resource name and percentage display
+                const resourceName = this.localization.get(`ui.resources.${resource}`);
+                element.querySelector('h3').textContent = resourceName;
                 element.querySelector('span').textContent = `${amount}%`;
                 
                 // Update resource bar
@@ -67,12 +79,17 @@ export class UIManager {
                     <div class="health-fill" style="width: ${survivor.health}%"></div>
                 </div>
                 <div class="survivor-stats">
-                    <p>Health: ${survivor.health}</p>
-                    <p>Skills: ${survivor.skills.join(', ')}</p>
+                    <p>${this.localization.get('ui.health')}: ${survivor.health}</p>
+                    <p>${this.localization.get('ui.skills')}: ${survivor.skills.map(skill => 
+                        this.localization.get(`skills.${skill.toLowerCase()}`)
+                    ).join(', ')}</p>
                     <p class="survivor-backstory">${survivor.backstory}</p>
                 </div>
             </div>
         `).join('');
+
+        // Update survivors panel title
+        document.querySelector('.survivors-panel h2').textContent = this.localization.get('ui.survivors');
     }
 
     showEventResult(result) {
@@ -99,6 +116,8 @@ export class UIManager {
     updateEvent(event) {
         if (!event) return;
 
+        this.currentEvent = event;  // Store the current event for language updates
+        
         // Update event text and choices
         this.eventText.textContent = event.text;
         this.choiceLeft.textContent = event.choices.left.text;

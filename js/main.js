@@ -3,14 +3,16 @@ import { EventSystem } from './eventSystem.js';
 import { UIManager } from './uiManager.js';
 import { ResourceManager } from './resourceManager.js';
 import { SurvivorManager } from './survivorManager.js';
+import { LocalizationManager } from './localization/index.js';
 
-class Game {
+export class Game {
     constructor() {
         this.gameState = new GameState();
         this.resourceManager = new ResourceManager();
         this.survivorManager = new SurvivorManager();
-        this.eventSystem = new EventSystem(this.gameState, this.resourceManager, this.survivorManager);
-        this.uiManager = new UIManager(this.gameState, this.resourceManager, this.survivorManager);
+        this.localization = new LocalizationManager();
+        this.eventSystem = new EventSystem(this.gameState, this.resourceManager, this.survivorManager, this.localization);
+        this.uiManager = new UIManager(this.gameState, this.resourceManager, this.survivorManager, this.localization);
         this.gameLoopInterval = null;
         this.isPaused = false;
         
@@ -98,13 +100,13 @@ class Game {
 
     checkGameOver() {
         if (!this.survivorManager.hasSurvivors()) {
-            this.endGame('All survivors have perished...');
+            this.endGame(this.localization.get('gameOver.reasons.noSurvivors'));
             return true;
         }
         
         if (this.resourceManager.hasExtremeResources()) {
             const extremeDesc = this.resourceManager.getExtremeResourcesDescription();
-            this.endGame(`Resource management crisis: ${extremeDesc}`);
+            this.endGame(this.localization.get('gameOver.reasons.resources', { reason: extremeDesc }));
             return true;
         }
         
@@ -115,7 +117,16 @@ class Game {
         this.pauseGame();
         const days = this.gameState.day;
         const weeks = this.gameState.week;
-        const message = `Game Over!\n\nReason: ${reason}\n\nYour group survived for ${days} days (${weeks} weeks).\n\nClick OK to restart.`;
+        const message = [
+            this.localization.get('gameOver.title'),
+            '',
+            `${this.localization.get('gameOver.reasons.resources', { reason })}`,
+            '',
+            this.localization.get('gameOver.survived', { days, weeks }),
+            '',
+            this.localization.get('gameOver.restart')
+        ].join('\n');
+        
         alert(message);
         location.reload(); // Restart the game
     }
