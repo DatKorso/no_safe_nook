@@ -1,0 +1,409 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    color: #e0e0e0;
+    line-height: 1.6;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('res/img/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.game-container {
+    max-width: 1400px;
+    height: 100vh;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 20px;
+}
+
+header {
+    text-align: center;
+}
+
+h1 {
+    font-size: 2em;
+    color: #ff6b6b;
+    margin-bottom: 10px;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.stat {
+    background-color: rgba(42, 42, 42, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+/* Main game area */
+.game-area {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    height: 100%;
+}
+
+/* Left sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.resources-panel {
+    background-color: rgba(42, 42, 42, 0.8);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resource {
+    padding: 6px 8px;
+    background-color: rgba(51, 51, 51, 0.8);
+    border-radius: 6px;
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.resource h3 {
+    font-size: 0.85em;
+    color: #4ecdc4;
+    font-weight: normal;
+}
+
+.resource span {
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.resource-bar {
+    height: 6px;
+    background-color: #1a1a1a;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+/* Resource status colors */
+.resource.critical h3,
+.resource.critical span {
+    color: #ff6b6b;
+}
+
+.resource.warning h3,
+.resource.warning span {
+    color: #ffd93d;
+}
+
+.resource.excess h3,
+.resource.excess span {
+    color: #95e1d3;
+}
+
+/* Resource fill colors and animations */
+.resource-fill {
+    height: 100%;
+    background-color: #4ecdc4;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.resource.critical .resource-fill {
+    background-color: #ff6b6b;
+    animation: pulse 1s infinite;
+}
+
+.resource.warning .resource-fill {
+    background-color: #ffd93d;
+}
+
+.resource.excess .resource-fill {
+    background-color: #95e1d3;
+}
+
+.survivors-panel {
+    background-color: rgba(42, 42, 42, 0.8);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.survivors-panel h2 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #4ecdc4;
+}
+
+.survivor {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #333;
+    border-radius: 8px;
+    border: 1px solid #3a3a3a;
+}
+
+.survivor h3 {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+.health-bar {
+    height: 8px;
+    margin: 5px 0;
+}
+
+.survivor-stats {
+    font-size: 0.8em;
+}
+
+.survivor-backstory {
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 0.85em;
+}
+
+/* Event panel */
+.event-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(42, 42, 42, 0.8);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.event-card {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    position: relative;
+}
+
+#event-text {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.choice-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.choice-btn {
+    padding: 12px 25px;
+    font-size: 1em;
+    min-width: 200px;
+}
+
+/* Event result */
+.event-result {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4ecdc4;
+    color: #1a1a1a;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 10;
+    white-space: pre-line;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-area {
+        grid-template-columns: 250px 1fr;
+        gap: 10px;
+    }
+
+    .choice-btn {
+        min-width: 150px;
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+    }
+
+    .game-container {
+        height: auto;
+    }
+
+    .game-area {
+        grid-template-columns: 1fr;
+    }
+
+    .choice-buttons {
+        flex-direction: column;
+    }
+
+    .choice-btn {
+        width: 100%;
+    }
+}
+
+/* Add back animations and interactive styles */
+.resource-fill {
+    height: 100%;
+    background-color: #4ecdc4;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Resource level indicators */
+.resource.critical .resource-fill {
+    background-color: #ff6b6b;
+    animation: pulse 1s infinite;
+}
+
+.resource.warning .resource-fill {
+    background-color: #ffd93d;
+}
+
+.resource.excess .resource-fill {
+    background-color: #95e1d3;
+}
+
+/* Resource value colors */
+.resource.critical span {
+    color: #ff6b6b;
+}
+
+.resource.warning span {
+    color: #ffd93d;
+}
+
+.resource.excess span {
+    color: #95e1d3;
+}
+
+/* Survivor states */
+.survivor.injured {
+    border-color: #ff6b6b;
+}
+
+.injured .health-fill {
+    background-color: #ff6b6b;
+}
+
+/* Button styles */
+.choice-btn {
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.choice-btn:hover {
+    transform: scale(1.05);
+    background-color: #45b7ae;
+}
+
+.choice-btn:active {
+    transform: scale(0.95);
+}
+
+.choice-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.choice-btn:disabled:hover {
+    transform: none;
+    background-color: #666;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes newEvent {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.new-event {
+    animation: newEvent 0.3s ease-out;
+}
+
+/* Button ripple effect */
+.choice-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.choice-btn:hover::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(40, 40);
+        opacity: 0;
+    }
+}
+
+/* Event result animation */
+.event-result {
+    animation: fadeOut 3s forwards;
+} 

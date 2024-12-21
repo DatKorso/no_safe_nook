@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Safe Nook - Survival Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>No Safe Nook</h1>
+            <div class="game-stats">
+                <div class="stat" id="day-counter">Day: 1</div>
+                <div class="stat" id="week-counter">Week: 1</div>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div class="sidebar">
+                <div class="resources-panel">
+                    <div class="resource" id="food">
+                        <div class="resource-header">
+                            <h3>Food</h3>
+                            <span>50%</span>
+                        </div>
+                        <div class="resource-bar">
+                            <div class="resource-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="resource" id="water">
+                        <div class="resource-header">
+                            <h3>Water</h3>
+                            <span>50%</span>
+                        </div>
+                        <div class="resource-bar">
+                            <div class="resource-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="resource" id="medicine">
+                        <div class="resource-header">
+                            <h3>Medicine</h3>
+                            <span>50%</span>
+                        </div>
+                        <div class="resource-bar">
+                            <div class="resource-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="resource" id="materials">
+                        <div class="resource-header">
+                            <h3>Materials</h3>
+                            <span>50%</span>
+                        </div>
+                        <div class="resource-bar">
+                            <div class="resource-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="resource" id="morale">
+                        <div class="resource-header">
+                            <h3>Morale</h3>
+                            <span>50%</span>
+                        </div>
+                        <div class="resource-bar">
+                            <div class="resource-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="survivors-panel">
+                    <h2>Survivors</h2>
+                    <div id="survivors-list"></div>
+                </div>
+            </div>
+
+            <div class="event-panel">
+                <div class="event-card">
+                    <p id="event-text">Welcome to No Safe Nook. Your journey of survival begins...</p>
+                    <div class="choice-buttons">
+                        <button id="choice-left" class="choice-btn">Left Choice</button>
+                        <button id="choice-right" class="choice-btn">Right Choice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html> 
